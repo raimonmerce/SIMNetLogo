@@ -13,6 +13,8 @@ turtles-own[
   Inanicio
   Cries
   MaduresaCries
+  posX
+  posY
 ]
 
 patches-own[
@@ -161,11 +163,11 @@ to go
     ]
     [                      ;Si no es una cria
       set Inanicio Inanicio + 1
-      if (Inanicio >= 210) [
+      if (Inanicio >= 1000) [
         die
       ]
       if (Fertilitat = false) [
-        ifelse (FertilitatCount = 100)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
+        ifelse (FertilitatCount = 1000)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
           set Fertilitat true
           set FertilitatCount 0
           set color red
@@ -205,7 +207,79 @@ to talps-cau
   ask patch-here [ ;TODO fer el cau 3x3, així no podran passar, si es terra ferma
       set cau true
       set pcolor 34
+  ]
+  
+  set posX xcor - 1
+  set posY ycor - 1
+  if (min-pxcor < posX and min-pycor < posY)[ ;x-1, y-1
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
     ]
+  ]
+  
+  set posX xcor - 1
+  set posY ycor
+  if (min-pxcor < posX)[ ;x-1, y
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
+    ]
+  ]
+  
+  set posX xcor - 1
+  set posY ycor + 1
+  if (min-pxcor < posX and max-pycor > posY)[ ;x-1, y+1
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
+    ]
+  ]
+  
+  set posX xcor + 1
+  set posY ycor - 1
+  if (max-pxcor > posX and min-pycor < posY)[ ;x+1, y-1
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
+    ]
+  ]
+  
+  set posX xcor + 1
+  set posY ycor
+  if (max-pxcor > posX)[ ;x+1, y
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
+    ]
+  ]
+  
+  set posX xcor + 1
+  set posY ycor + 1
+  if (max-pxcor > posX and max-pycor > posY)[ ;x+1, y+1
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
+    ]
+  ]
+  
+  set posX xcor 
+  set posY ycor + 1
+  if (max-pycor > posY)[ ;x, y+1
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
+    ]
+  ]
+  
+  set posX xcor
+  set posY ycor - 1
+  if (min-pycor < posY)[ ;x, y-1
+    ask patch posX posY [ 
+      set cau true
+      set pcolor 34
+    ]
+  ]
 
   hatch 10[
     set shape "bug"
