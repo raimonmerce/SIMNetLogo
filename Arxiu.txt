@@ -10,6 +10,7 @@ turtles-own[
   Fertilitat
   PeriodeFertilitat
   PeriodeFertilitatCount
+  Inanicio
   Cries
   MaduresaCries
 ]
@@ -36,7 +37,7 @@ talps-own [
 ]
 
 to setup
-  
+
   clear-all
   reset-ticks
      ask Patches [
@@ -87,6 +88,7 @@ to setup
     set FertilitatCount 0
     set PeriodeFertilitat true
     set PeriodeFertilitatCount 0
+    set Inanicio 0
     set Cries false
   ]
   create-Carnivores CarnivoresTotal[
@@ -148,15 +150,22 @@ to go
   ]
   ask talps [
     set Vida Vida + 1
-    ifelse (Cries = true) [ ;Si es una cria, comprova si supera el 250 de vida 
+    if (Vida >= 50000) [
+       die
+    ]
+    ifelse (Cries = true) [ ;Si es una cria, comprova si supera el 250 de vida
       if (Vida >= 250) [
         set Cries false     ;Es fa adult
         set color orange
       ]
     ]
     [                      ;Si no es una cria
+      set Inanicio Inanicio + 1
+      if (Inanicio >= 210) [
+        die
+      ]
       if (Fertilitat = false) [
-        ifelse (FertilitatCount = 500)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
+        ifelse (FertilitatCount = 100)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
           set Fertilitat true
           set FertilitatCount 0
           set color red
@@ -165,7 +174,7 @@ to go
           set FertilitatCount FertilitatCount + 1
         ]
       ]
-    
+
       if(Fertilitat = true and PeriodeFertilitat = true)[ ;Si es Fertil i esta en PeriodeFertilitat TODO:PeriodeFertilitat s'activaria quan dos fertils xoquen
         ifelse (PeriodeFertilitatCount = 350)[    ;Son 100 d'espera obligatoris + 250 esperant a que creixin les cries
           set Fertilitat false
@@ -192,13 +201,13 @@ to moure-generic ; turtle procedure
   ]
 end
 
-to talps-cau 
-  ask patch-here [
+to talps-cau
+  ask patch-here [ ;TODO fer el cau 3x3, així no podran passar, si es terra ferma
       set cau true
       set pcolor 34
     ]
 
-  hatch 3[
+  hatch 10[
     set shape "bug"
     set color yellow
     set size 6
@@ -208,15 +217,16 @@ to talps-cau
     set PeriodeFertilitat true
     set PeriodeFertilitatCount 0
     set Cries true
+    set Inanicio 0
   ]
 end
 
 to talps-moure
     if ([aigua] of patch-here = true) [die]
-    
-  
-    ifelse (Fertilitat = true and PeriodeFertilitat = true) [
-        if (PeriodeFertilitatCount = 1)[
+
+
+    ifelse (Fertilitat = true and PeriodeFertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
+        if (PeriodeFertilitatCount = 100)[
            talps-cau
         ]
     ]
@@ -224,13 +234,13 @@ to talps-moure
         rt random-float 90 - random-float 90
         ;Comprovacio si anem a moure'ns fora del mapa
         if (0 <= heading or heading <= 90) [
-      
+
         ]
         if (90 <= heading or heading <= 180) [
-        
+
         ]
         if (180 <= heading or heading <= 270) [
-          
+
         ]
        fd 2
    ]
@@ -276,7 +286,7 @@ to eat-generic ;
   ]
   if breed = Carnivores and (count Papallones-here > 0 or count Aranyes-here > 0)
   [
- 
+
     ifelse (count Aranyes-here > 0)[
       let presa one-of Aranyes-here
       ask presa [morir]
