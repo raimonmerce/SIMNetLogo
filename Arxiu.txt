@@ -8,8 +8,8 @@ turtles-own[
   Inanició
   FertilitatCount
   Fertilitat
-  PeriodeFertilitat
-  PeriodeFertilitatCount
+  Reproduccio
+  ReproduccioCount
   Inanicio
   Cries
   MaduresaCries
@@ -88,10 +88,10 @@ to setup
     set color orange
     set size 6
     set Vida 250
-    set Fertilitat false
-    set FertilitatCount 0
-    set PeriodeFertilitat true
-    set PeriodeFertilitatCount 0
+    set Fertilitat false ; Boolea conforme es fertil
+    set FertilitatCount 0 ; Contador de cicles fins ser fertil
+    set Reproduccio false ; Boolea conforme s'esta fent l
+    set ReproduccioCount 0 ; Contador de cicles fins acabar reproduccio
     set Inanicio 0
     set Cries false
   ]
@@ -153,11 +153,24 @@ to go
     eat-generic
   ]
   ask talps [
+    ifelse (Fertilitat = true)[
+      set color pink
+    ]
+    [
+       ifelse (Reproduccio = true)[
+        set color white
+      ]
+      [
+        set color orange
+      ]
+    ]
+    
     set Vida Vida + 1
     if (Vida >= 50000) [
        die
     ]
     ifelse (Cries = true) [ ;Si es una cria, comprova si supera el 250 de vida
+    set color yellow
       if (Vida >= 250) [
         set Cries false     ;Es fa adult
         set color orange
@@ -166,31 +179,41 @@ to go
     [                      ;Si no es una cria
       set Inanicio Inanicio + 1
       if (Inanicio >= 1000) [
-        set color red
         die
       ]
-      if (Fertilitat = false) [
-        ifelse (FertilitatCount >= 30)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
+      
+      ifelse (Fertilitat = false) [
+        ifelse (FertilitatCount >= 100)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
           set Fertilitat true
           set FertilitatCount 0
-          set color pink
         ]
         [
           set FertilitatCount FertilitatCount + 1
         ]
       ]
-
-      if(Fertilitat = true and PeriodeFertilitat = true)[ ;Si es Fertil i esta en PeriodeFertilitat TODO:PeriodeFertilitat s'activaria quan dos fertils xoquen
-        ifelse (PeriodeFertilitatCount >= 350)[    ;Son 100 d'espera obligatoris + 250 esperant a que creixin les cries
+      [
+        ifelse (FertilitatCount >= 100)[ ;Periode que es fertil (100)
           set Fertilitat false
-          set PeriodeFertilitat true
-          set PeriodeFertilitatCount 0
+          set FertilitatCount 0
         ]
         [
-          set PeriodeFertilitatCount PeriodeFertilitatCount + 1
+          set FertilitatCount FertilitatCount + 1
+        ]
+      ]      
+
+      ifelse(Reproduccio = true)[ ;Si es Fertil i esta en Reproduccio TODO:Reproduccio s'activaria quan dos fertils xoquen
+        
+        ifelse (ReproduccioCount = 250)[    ;Son 100 d'espera obligatoris + 250 esperant a que creixin les cries
+          set Reproduccio false
+          set ReproduccioCount 0
+        ]
+        [
+          set ReproduccioCount ReproduccioCount + 1
         ]
       ]
+      [
       talps-moure
+      ]
     ]
   ]
   tick
@@ -283,18 +306,18 @@ to talps-cau
     ]
   ]
 
-  hatch 10[
-    set shape "bug"
-    set color yellow
-    set size 6
-    set Vida 0
-    set Fertilitat false
-    set FertilitatCount 0
-    set PeriodeFertilitat true
-    set PeriodeFertilitatCount 0
-    set Cries true
-    set Inanicio 0
-  ]
+    hatch 10[
+      set shape "bug"
+      set color yellow
+      set size 6
+      set Vida 0
+      set Fertilitat false
+      set FertilitatCount 0
+      set Reproduccio false
+      set ReproduccioCount 0
+      set Cries true
+      set Inanicio 0
+    ]
 end
 
 to talps-buscapresa
@@ -313,9 +336,15 @@ end
 
 to talps-moure
   if ([aigua] of patch-here = true) [die]
-  ifelse (Fertilitat = true and PeriodeFertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
-    if (PeriodeFertilitatCount < 100)[
-      ifelse (count Talps-here = 2) [
+  ifelse (Fertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
+      ifelse (count Talps-here >= 2 and count Talps-here with [Fertilitat = True] >= 2) [
+
+        show count Talps-here with [Fertilitat = True]
+        ;set Reproduccio true
+        ask Talps-here [
+          set Fertilitat false
+        ]
+        set Reproduccio true
         talps-cau
       ]
       [
@@ -338,12 +367,34 @@ to talps-moure
           talps-buscapresa
         ]
       ]
-    ]
     talps-buscapresa
   ]
   [
     talps-buscapresa
   ]
+end
+
+to talps-eat
+    ifelse (count Granotes-here > 0)[
+      let presa one-of Granotes-here
+      ask presa [morir-granota myself]
+      set Inanicio 0
+      ;beep
+    ]
+    [
+      ifelse (count Papallones-here > 0)[
+      let presa one-of Papallones-here
+      ask presa [morir-papallona myself]
+      set Inanicio 0
+      ;beep
+      ]
+      [
+        let presa one-of Aranyes-here
+        ask presa [morir-aranya myself]
+        set Inanicio 0
+        ;beep
+      ]
+    ]
 end
 
 to eat-generic ;
@@ -359,23 +410,7 @@ to eat-generic ;
   ]
   if breed = Talps and (count Aranyes-here > 0 or count Granotes-here > 0 or count Papallones-here > 0)
   [
-    ifelse (count Granotes-here > 0)[
-      let presa one-of Granotes-here
-      ask presa [morir-granota myself]
-      ;beep
-    ]
-    [
-      ifelse (count Papallones-here > 0)[
-      let presa one-of Papallones-here
-      ask presa [morir-papallona myself]
-      ;beep
-      ]
-      [
-        let presa one-of Aranyes-here
-        ask presa [morir-aranya myself]
-        ;beep
-      ]
-    ]
+    talps-eat
   ]
   if breed = Granotes and (count Talps-here > 0)
   [
