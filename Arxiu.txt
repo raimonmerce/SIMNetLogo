@@ -298,11 +298,18 @@ to talps-cau
 end
 
 to talps-buscapresa
-  let visio patches in-radius 15
-  let objectiu one-of visio with [any? Papallones-here or any? Granotes-here or any? Aranyes-here]
-  ifelse objectiu != nobody [ face objectiu ]
+  let objectiug min-one-of Granotes in-radius 15 [ distance myself ]
+  ifelse objectiug != nobody [ face objectiug ]
   [
-    rt random-float 90 - random-float 90
+    let objectiup min-one-of Papallones in-radius 15 [ distance myself ]
+    ifelse objectiup != nobody [ face objectiup ]
+    [
+      let objectiua min-one-of Aranyes in-radius 15 [ distance myself ]
+      ifelse objectiua != nobody [ face objectiua ]
+      [
+        rt random-float 90 - random-float 90
+      ]
+    ]
   ]
   fd 2
 end
