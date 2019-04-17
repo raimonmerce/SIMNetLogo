@@ -164,7 +164,7 @@ to talps-morir [qui]
   ifelse [breed] of qui = Granotes [
     ifelse cries = true [ die ] 
     [
-      ;set penalitzacio-granotes penalitzacio-granotes + 1
+      set penalitzacio-granotes penalitzacio-granotes + 1
     ]
   ]
   [
@@ -173,19 +173,19 @@ to talps-morir [qui]
     ]
     [
       ifelse [breed] of qui = Aranyes [
-        ;set penalitzacio-aranyes penalitzacio-aranyes + 1
+        set penalitzacio-aranyes penalitzacio-aranyes + 1
       ]
       [
         ifelse [breed] of qui = Papallones [
-          ;set penalitzacio-papallones penalitzacio-papallones + 1
+          set penalitzacio-papallones penalitzacio-papallones + 1
         ]
         [
           ifelse [breed] of qui = Flors [
-            ;set penalitzacio-flors penalitzacio-flors + 1
+            set penalitzacio-flors penalitzacio-flors + 1
           ]
           [
             ifelse [breed] of qui = Carnivores [
-              ;set penalitzacio-carnivores penalitzacio-carnivores + 1
+              set penalitzacio-carnivores penalitzacio-carnivores + 1
             ]
             [
               ifelse [breed] of qui = Fenomens [
@@ -299,7 +299,7 @@ to moure-generic ; turtle procedure
 end
 
 to talps-cau
-  ask patch-here [ ;TODO fer el cau 3x3, així no podran passar, si es terra ferma
+  ask patch-here [
       set cau true
       set pcolor 34
   ]
@@ -422,7 +422,7 @@ end
 to talps-moureon
   if ([aigua] of patch-here = true) [die]
   if (Pair = false) [
-  ifelse (Fertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
+  ifelse (Fertilitat = true) [ 
       ifelse (count Talps-here >= 2 and count Talps-here with [Fertilitat = True] >= 2) [
 
         show count Talps-here with [Fertilitat = True]
@@ -497,7 +497,7 @@ to talps-menjar
   ]
 end
 
-to eat-generic ;
+to eat-generic 
   if breed = Papallones and (count Flors-here > 0)
   [
     set color red
