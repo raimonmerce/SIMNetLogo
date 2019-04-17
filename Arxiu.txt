@@ -166,13 +166,14 @@ to go
     [                      ;Si no es una cria
       set Inanicio Inanicio + 1
       if (Inanicio >= 1000) [
+        set color red
         die
       ]
       if (Fertilitat = false) [
-        ifelse (FertilitatCount = 500)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
+        ifelse (FertilitatCount >= 30)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
           set Fertilitat true
           set FertilitatCount 0
-          set color red
+          set color pink
         ]
         [
           set FertilitatCount FertilitatCount + 1
@@ -180,7 +181,7 @@ to go
       ]
 
       if(Fertilitat = true and PeriodeFertilitat = true)[ ;Si es Fertil i esta en PeriodeFertilitat TODO:PeriodeFertilitat s'activaria quan dos fertils xoquen
-        ifelse (PeriodeFertilitatCount = 350)[    ;Son 100 d'espera obligatoris + 250 esperant a que creixin les cries
+        ifelse (PeriodeFertilitatCount >= 350)[    ;Son 100 d'espera obligatoris + 250 esperant a que creixin les cries
           set Fertilitat false
           set PeriodeFertilitat true
           set PeriodeFertilitatCount 0
@@ -189,7 +190,6 @@ to go
           set PeriodeFertilitatCount PeriodeFertilitatCount + 1
         ]
       ]
-
       talps-moure
     ]
   ]
@@ -297,62 +297,53 @@ to talps-cau
   ]
 end
 
+to talps-buscapresa
+  let visio patches in-radius 15
+  let objectiu one-of visio with [any? Papallones-here or any? Granotes-here or any? Aranyes-here]
+  ifelse objectiu != nobody [ face objectiu ]
+  [
+    rt random-float 90 - random-float 90
+  ]
+  if ((pxcor + 2 < max-pxcor) and (pxcor - 2 > min-pxcor) and (pycor + 2 < max-pycor) and (pycor - 2 > min-pycor)) [
+    if ([aigua] of patch-ahead 2 = false) [
+            fd 2
+    ]
+  ]
+end
+
 to talps-moure
-    if ([aigua] of patch-here = true) [die]
-
-
-    ifelse (Fertilitat = true and PeriodeFertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
-        if (PeriodeFertilitatCount < 100)[
+  if ([aigua] of patch-here = true) [die]
+  ifelse (Fertilitat = true and PeriodeFertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
+    if (PeriodeFertilitatCount < 100)[
       ifelse (count Talps-here = 2) [
         talps-cau
       ]
       [
-      let animals turtles in-radius 15
-    
-    ifelse any? animals with [breed = Talps] [
-      let objectiu one-of animals with [breed = Talps] 
-      ask objectiu [
-        set objX [xcor] of objectiu
-        set objY [ycor] of objectiu
-        let rotacio atan objX objY
-        rt rotacio
-        
-      ]
-    ]
-    
-    [
-      rt random-float 90 - random-float 90
-      
-    ]
-      
-      
-           fd 2
-      ]
+        let visio patches in-radius 15
+        let objectiu one-of visio with [any? Talps-here]
+        ifelse objectiu != nobody [
+          ifelse objectiu = self [
+            talps-buscapresa
+          ]
+          [
+            face objectiu
+            if ((pxcor + 2 < max-pxcor) and (pxcor - 2 > min-pxcor) and (pycor + 2 < max-pycor) and (pycor - 2 > min-pycor)) [
+              if ([aigua] of patch-ahead 2 = false) [
+            fd 2
+              ]
+            ]
+          ]
         ]
-    
-    ]
-    [
-    let animals turtles in-radius 15
-    
-    ifelse any? animals with [breed = Aranyes or breed = Papallones or breed = Granotes] [
-      let objectiu one-of animals with [breed = Aranyes or breed = Papallones or breed = Granotes] 
-      ask objectiu [
-        set objX [xcor] of objectiu
-        set objY [ycor] of objectiu
-        let rotacio atan objX objY
-        rt rotacio
-        
+        [
+          talps-buscapresa
+        ]
       ]
     ]
-    
-    [
-      rt random-float 90 - random-float 90
-      
-    ]
-    fd 2
-
-   ]
-
+    talps-buscapresa
+  ]
+  [
+    talps-buscapresa
+  ]
 end
 
 to eat-generic ;
