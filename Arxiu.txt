@@ -15,6 +15,8 @@ turtles-own[
   MaduresaCries
   posX
   posY
+  objX
+  objY
 ]
 
 patches-own[
@@ -300,23 +302,53 @@ to talps-moure
 
 
     ifelse (Fertilitat = true and PeriodeFertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
-        if (PeriodeFertilitatCount = 100)[
-           talps-cau
+        if (PeriodeFertilitatCount < 100)[
+      ifelse (count Talps-here = 2) [
+        talps-cau
+      ]
+      [
+      let visio patches in-radius 15
+    
+    ;ifelse any? animals with [breed = Aranyes or breed = Papallones or breed = Granotes] [
+     ; let objectiu one-of animals 
+     ; ask objectiu [
+     ;   if ([breed] of objectiu = Aranyes or [breed] of objectiu = Papallones or [breed] of objectiu = Granotes) [
+     ;     set objX [xcor] of objectiu
+     ;     set objY [ycor] of objectiu
+      ;  ]
+      ;]
+      ;let rotacio atan objX objY
+      ;show rotacio
+    
+    let objectiu one-of visio with [any? Talps-here or any? Talps-here or any? Talps-here]
+        ifelse objectiu != nobody [ face objectiu ]
+    
+    [
+      rt random-float 90 - random-float 90
+      
+    ]
+      
+      
+           fd 2
+      ]
         ]
+    
     ]
     [
-        rt random-float 90 - random-float 90
-        ;Comprovacio si anem a moure'ns fora del mapa
-        if (0 <= heading or heading <= 90) [
+    let visio patches in-radius 15
+    
+    
+    let objectiu one-of visio with [any? Papallones-here or any? Granotes-here or any? Aranyes-here]
+    ifelse objectiu != nobody [ face objectiu 
+    
+    ]
+    
+    [
+      rt random-float 90 - random-float 90
+      
+    ]
+    fd 2
 
-        ]
-        if (90 <= heading or heading <= 180) [
-
-        ]
-        if (180 <= heading or heading <= 270) [
-
-        ]
-       fd 2
    ]
 
 end
