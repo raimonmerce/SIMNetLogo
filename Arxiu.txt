@@ -17,6 +17,8 @@ turtles-own[
   posY
   objX
   objY
+  Pair
+  PairCount
 ]
 
 patches-own[
@@ -94,6 +96,8 @@ to setup
     set ReproduccioCount 0 ; Contador de cicles fins acabar reproduccio
     set Inanicio 0
     set Cries false
+    set Pair false
+    set PairCount  0
   ]
   create-Carnivores CarnivoresTotal[
     setxy random-xcor random-ycor
@@ -168,6 +172,15 @@ to go
     set Vida Vida + 1
     if (Vida >= 50000) [
        die
+    ]
+    if (Pair = true) [
+      ifelse (PairCount = 5) [
+       set Pair  false
+       set PairCount  0 
+      ] 
+      [
+        set PairCount PairCount + 1
+      ]
     ]
     ifelse (Cries = true) [ ;Si es una cria, comprova si supera el 250 de vida
     set color yellow
@@ -335,7 +348,7 @@ to talps-buscapresa
     ]
   ]
   if ((pxcor + 2 < max-pxcor) and (pxcor - 2 > min-pxcor) and (pycor + 2 < max-pycor) and (pycor - 2 > min-pycor)) [
-    if ([aigua] of patch-ahead 2 = false) [
+    if([aigua] of patch-ahead 2 = false) [
             fd 2
     ]
   ]
@@ -343,6 +356,7 @@ end
 
 to talps-moure
   if ([aigua] of patch-here = true) [die]
+  if (Pair = false) [
   ifelse (Fertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
       ifelse (count Talps-here >= 2 and count Talps-here with [Fertilitat = True] >= 2) [
 
@@ -365,7 +379,7 @@ to talps-moure
             face objectiu
             if ((pxcor + 2 < max-pxcor) and (pxcor - 2 > min-pxcor) and (pycor + 2 < max-pycor) and (pycor - 2 > min-pycor)) [
               if ([aigua] of patch-ahead 2 = false) [
-            fd 2
+              fd 2
               ]
             ]
           ]
@@ -379,12 +393,14 @@ to talps-moure
   [
     talps-buscapresa
   ]
+  ]
 end
 
 to talps-eat
     ifelse (count Granotes-here > 0)[
       let presa one-of Granotes-here
       ask presa [morir-granota myself]
+    set pair true
       set Inanicio 0
       ;beep
     ]
@@ -392,12 +408,14 @@ to talps-eat
       ifelse (count Papallones-here > 0)[
       let presa one-of Papallones-here
       ask presa [morir-papallona myself]
+      set pair true
       set Inanicio 0
       ;beep
       ]
       [
         let presa one-of Aranyes-here
         ask presa [morir-aranya myself]
+      set pair true
         set Inanicio 0
         ;beep
       ]
