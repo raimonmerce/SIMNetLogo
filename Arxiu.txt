@@ -1,0 +1,410 @@
+globals [
+  AiguaTotal
+]
+
+turtles-own[
+  Vida
+  Velocitat
+  Inanició
+  FertilitatCount
+  Fertilitat
+  PeriodeFertilitat
+  PeriodeFertilitatCount
+  Inanicio
+  Cries
+  MaduresaCries
+  posX
+  posY
+  objX
+  objY
+]
+
+patches-own[
+  Aigua;color 95
+  Terra; color 65
+  cau; color 34
+  Teranyina; color 9
+]
+
+
+breed [Guineus Guineu]
+breed [Talps Talp]
+breed [Carnivores Carnivora]
+breed [Flors Flor]
+breed [Aranyes Aranya]
+breed [Granotes Granota]
+breed [Papallones Papallona]
+breed [Fenomens Fenomen]
+
+talps-own [
+  direccio
+]
+
+to setup
+
+  clear-all
+  reset-ticks
+     ask Patches [
+    set aigua false;color 95
+    set terra true; color 65
+    set cau false; color 34
+    set teranyina false; color 965
+    set pcolor 65
+    set aiguatotal aiguatotal - 900
+
+      if (pxcor > 0 and pxcor < 150 and pycor > 0 and pycor < 150)[
+      set pcolor 95
+      set aigua true
+      set terra false
+      ask neighbors [
+         set pcolor 95
+         set aigua true
+         set terra false
+        ask neighbors [
+         set pcolor 95
+         set aigua true
+         set terra false
+           ask neighbors [
+         set pcolor 95
+         set aigua true
+         set terra false
+            ]
+     ]
+
+     ]
+    ]
+  ]
+
+
+  create-Guineus GuineusTotal[
+    setxy random-xcor random-ycor
+    set shape "wolf"
+    set color blue
+    set size 6
+  ]
+  create-Talps TalpsTotal[
+    setxy random-xcor random-ycor
+    set shape "bug"
+    set color orange
+    set size 6
+    set Vida 250
+    set Fertilitat false
+    set FertilitatCount 0
+    set PeriodeFertilitat true
+    set PeriodeFertilitatCount 0
+    set Inanicio 0
+    set Cries false
+  ]
+  create-Carnivores CarnivoresTotal[
+    setxy random-xcor random-ycor
+    set shape "plant"
+    set color blue
+    set size 6
+  ]
+  create-Flors FlorsTotal[
+    setxy random-xcor random-ycor
+    set shape "flower"
+    set color blue
+    set size 6
+  ]
+  create-Aranyes AranyesTotal[
+    setxy random-xcor random-ycor
+    set shape "spider"
+    set color blue
+    set size 6
+  ]
+  create-Granotes GranotesTotal[
+    setxy random-xcor random-ycor
+    set shape "turtle"
+    set color blue
+    set size 6
+  ]
+  create-Papallones PapallonesTotal[
+    setxy random-xcor random-ycor
+    set shape "butterfly"
+    set color blue
+    set size 6
+  ]
+  create-Fenomens FenomenTotal[
+    setxy random-xcor random-ycor
+    set shape "arrow"
+    set color blue
+    set size 10
+  ]
+
+end
+
+to morir-granota [qui]
+  die
+end
+
+to morir-papallona [qui]
+  die
+end
+
+to morir-aranya [qui]
+  die
+end
+
+
+to go
+  ask turtles [
+    moure-generic
+    eat-generic
+  ]
+  ask talps [
+    set Vida Vida + 1
+    if (Vida >= 50000) [
+       die
+    ]
+    ifelse (Cries = true) [ ;Si es una cria, comprova si supera el 250 de vida
+      if (Vida >= 250) [
+        set Cries false     ;Es fa adult
+        set color orange
+      ]
+    ]
+    [                      ;Si no es una cria
+      set Inanicio Inanicio + 1
+      if (Inanicio >= 1000) [
+        set color red
+        die
+      ]
+      if (Fertilitat = false) [
+        ifelse (FertilitatCount >= 30)[ ;Si porta 1000 turns vius passa a ser fertil (500 per fer-ho curt al probar)
+          set Fertilitat true
+          set FertilitatCount 0
+          set color pink
+        ]
+        [
+          set FertilitatCount FertilitatCount + 1
+        ]
+      ]
+
+      if(Fertilitat = true and PeriodeFertilitat = true)[ ;Si es Fertil i esta en PeriodeFertilitat TODO:PeriodeFertilitat s'activaria quan dos fertils xoquen
+        ifelse (PeriodeFertilitatCount >= 350)[    ;Son 100 d'espera obligatoris + 250 esperant a que creixin les cries
+          set Fertilitat false
+          set PeriodeFertilitat true
+          set PeriodeFertilitatCount 0
+        ]
+        [
+          set PeriodeFertilitatCount PeriodeFertilitatCount + 1
+        ]
+      ]
+      talps-moure
+    ]
+  ]
+  tick
+end
+
+to moure-generic ; turtle procedure
+   ifelse breed = Flors or breed = Carnivores or breed = Talps[
+  ]
+  [
+    rt random-float 90 - random-float 90
+    fd 1
+  ]
+end
+
+to talps-cau
+  ask patch-here [ ;TODO fer el cau 3x3, així no podran passar, si es terra ferma
+      set cau true
+      set pcolor 34
+  ]
+
+  set posX xcor - 1
+  set posY ycor - 1
+  if (min-pxcor < posX and min-pycor < posY and [terra] of  patch posX posY = true)[ ;x-1, y-1
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  set posX xcor - 1
+  set posY ycor
+  if (min-pxcor < posX and [terra] of  patch posX posY = true)[ ;x-1, y
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  set posX xcor - 1
+  set posY ycor + 1
+  if (min-pxcor < posX and max-pycor > posY and [terra] of  patch posX posY = true)[ ;x-1, y+1
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  set posX xcor + 1
+  set posY ycor - 1
+  if (max-pxcor > posX and min-pycor < posY and [terra] of  patch posX posY = true)[ ;x+1, y-1
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  set posX xcor + 1
+  set posY ycor
+  if (max-pxcor > posX and [terra] of  patch posX posY = true)[ ;x+1, y
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  set posX xcor + 1
+  set posY ycor + 1
+  if (max-pxcor > posX and max-pycor > posY and [terra] of  patch posX posY = true)[ ;x+1, y+1
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  set posX xcor
+  set posY ycor + 1
+  if (max-pycor > posY and [terra] of  patch posX posY = true)[ ;x, y+1
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  set posX xcor
+  set posY ycor - 1
+  if (min-pycor < posY and [terra] of  patch posX posY = true)[ ;x, y-1
+    ask patch posX posY [
+      set cau true
+      set pcolor 34
+    ]
+  ]
+
+  hatch 10[
+    set shape "bug"
+    set color yellow
+    set size 6
+    set Vida 0
+    set Fertilitat false
+    set FertilitatCount 0
+    set PeriodeFertilitat true
+    set PeriodeFertilitatCount 0
+    set Cries true
+    set Inanicio 0
+  ]
+end
+
+to talps-buscapresa
+  let visio patches in-radius 15
+  let objectiu one-of visio with [any? Papallones-here or any? Granotes-here or any? Aranyes-here]
+  ifelse objectiu != nobody [ face objectiu ]
+  [
+    rt random-float 90 - random-float 90
+  ]
+  fd 2
+end
+
+to talps-moure
+  if ([aigua] of patch-here = true) [die]
+  ifelse (Fertilitat = true and PeriodeFertilitat = true) [ ;TODO: Aquí s'ha d'implementar la part on es junten 2 que son Fèrtils
+    if (PeriodeFertilitatCount < 100)[
+      ifelse (count Talps-here = 2) [
+        talps-cau
+      ]
+      [
+        let visio patches in-radius 15
+        let objectiu one-of visio with [any? Talps-here]
+        ifelse objectiu != nobody [
+          ifelse objectiu = self [
+            talps-buscapresa
+          ]
+          [
+            face objectiu
+            fd 2
+          ]
+        ]
+        [
+          talps-buscapresa
+        ]
+      ]
+    ]
+    talps-buscapresa
+  ]
+  [
+    talps-buscapresa
+  ]
+end
+
+to eat-generic ;
+  if breed = Papallones and (count Flors-here > 0)
+  [
+    set color red
+  ]
+  if breed = Aranyes and (count Papallones-here > 0)
+  [
+    let presa one-of papallones-here
+    ask presa[ morir]
+    ;beep
+  ]
+  if breed = Talps and (count Aranyes-here > 0 or count Granotes-here > 0 or count Papallones-here > 0)
+  [
+    ifelse (count Granotes-here > 0)[
+      let presa one-of Granotes-here
+      ask presa [morir-granota myself]
+      ;beep
+    ]
+    [
+      ifelse (count Papallones-here > 0)[
+      let presa one-of Papallones-here
+      ask presa [morir-papallona myself]
+      ;beep
+      ]
+      [
+        let presa one-of Aranyes-here
+        ask presa [morir-aranya myself]
+        ;beep
+      ]
+    ]
+  ]
+  if breed = Granotes and (count Talps-here > 0)
+  [
+    let presa one-of Talps-here
+    ask presa[ morir]
+    ;beep
+  ]
+  if breed = Carnivores and (count Papallones-here > 0 or count Aranyes-here > 0)
+  [
+
+    ifelse (count Aranyes-here > 0)[
+      let presa one-of Aranyes-here
+      ask presa [morir]
+      ;beep
+    ]
+    [
+      let presa one-of Papallones-here
+      ask presa[ morir]
+      ;beep
+    ]
+  ]
+  if breed = Guineus and (count Talps-here > 0 or count Granotes-here > 0)
+  [
+    ifelse (count Talps-here > 0)[
+      let presa one-of Talps-here
+      ask presa[ morir]
+      ;beep
+    ]
+    [
+      let presa one-of Granotes-here
+      ask presa[ morir]
+      ;beep
+    ]
+  ]
+end
+
+to morir
+  set color red
+  die
+end
